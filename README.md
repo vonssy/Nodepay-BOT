@@ -8,7 +8,6 @@ Register Here : [Nodepay](https://app.nodepay.ai/register?ref=ydqgY3hNlgl6KaD) |
   - Auto Get Account Information
   - Auto Run With Auto Proxy if u Choose 1 [Use [Monosans Proxy](https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/all.txt)]
   - Auto Run With Manual Proxy if u Choose 2 [Paste Ur personal proxy in manual_proxy.txt]
-  - Auto Run Without Proxy if u Choose 3
   - Auto Complete Available Tasks
   - Auto Send Ping (3 Connection States) Every 1 Minutes
   - Multi Accounts With Threads
@@ -42,7 +41,7 @@ Pastikan Anda telah menginstal Python3.9 dan PIP.
   ```
 - **manual_proxy.txt:** Anda akan menemukan file `manual_proxy.txt` di dalam direktori proyek. Pastikan `manual_proxy.txt` berisi data yang sesuai dengan format yang diharapkan oleh skrip. Berikut adalah contoh format file:
   ```bash
-    ip:port #http or socks5 - change schemes in line 109
+    ip:port #http or socks5 - change schemes in line 100
     http://ip:port
     socks4://ip:port
     socks5://ip:port
