@@ -137,7 +137,7 @@ class Nodepay:
                         f"{Fore.WHITE + Style.BRIGHT} {self.hide_token(token)} {Style.RESET_ALL}"
                         f"{Fore.RED + Style.BRIGHT}GET ERROR.{Style.RESET_ALL}"
                         f"{Fore.YELLOW + Style.BRIGHT} Retrying... {Style.RESET_ALL}"
-                        f"{Fore.YELLOW + Style.BRIGHT}]{Style.RESET_ALL}",
+                        f"{Fore.MAGENTA + Style.BRIGHT}]{Style.RESET_ALL}",
                         end="\r",
                         flush=True
                     )
@@ -169,7 +169,7 @@ class Nodepay:
                         f"{Fore.WHITE + Style.BRIGHT} {self.hide_token(token)} {Style.RESET_ALL}"
                         f"{Fore.RED + Style.BRIGHT}GET ERROR.{Style.RESET_ALL}"
                         f"{Fore.YELLOW + Style.BRIGHT} Retrying... {Style.RESET_ALL}"
-                        f"{Fore.YELLOW + Style.BRIGHT}]{Style.RESET_ALL}",
+                        f"{Fore.MAGENTA + Style.BRIGHT}]{Style.RESET_ALL}",
                         end="\r",
                         flush=True
                     )
@@ -201,7 +201,7 @@ class Nodepay:
                         f"{Fore.WHITE + Style.BRIGHT} {username} {Style.RESET_ALL}"
                         f"{Fore.RED + Style.BRIGHT}GET ERROR.{Style.RESET_ALL}"
                         f"{Fore.YELLOW + Style.BRIGHT} Retrying... {Style.RESET_ALL}"
-                        f"{Fore.YELLOW + Style.BRIGHT}]{Style.RESET_ALL}",
+                        f"{Fore.MAGENTA + Style.BRIGHT}]{Style.RESET_ALL}",
                         end="\r",
                         flush=True
                     )
@@ -235,7 +235,7 @@ class Nodepay:
                         f"{Fore.WHITE + Style.BRIGHT} {username} {Style.RESET_ALL}"
                         f"{Fore.RED + Style.BRIGHT}GET ERROR.{Style.RESET_ALL}"
                         f"{Fore.YELLOW + Style.BRIGHT} Retrying... {Style.RESET_ALL}"
-                        f"{Fore.YELLOW + Style.BRIGHT}]{Style.RESET_ALL}",
+                        f"{Fore.MAGENTA + Style.BRIGHT}]{Style.RESET_ALL}",
                         end="\r",
                         flush=True
                     )
@@ -363,17 +363,17 @@ class Nodepay:
                 self.log(
                     f"{Fore.MAGENTA + Style.BRIGHT}[ Account{Style.RESET_ALL}"
                     f"{Fore.WHITE + Style.BRIGHT} {hide_token} {Style.RESET_ALL}"
-                    f"{Fore.RED + Style.BRIGHT}Login Failed{Style.RESET_ALL}"
-                    f"{Fore.WHITE + Style.BRIGHT} With Proxy {proxy} {Style.RESET_ALL}"
-                    f"{Fore.MAGENTA + Style.BRIGHT}]{Style.RESET_ALL}"
+                    f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
+                    f"{Fore.RED + Style.BRIGHT} Login Failed {Style.RESET_ALL}"
+                    f"{Fore.WHITE + Style.BRIGHT}With Proxy {proxy}{Style.RESET_ALL}"
+                    f"{Fore.MAGENTA + Style.BRIGHT} ]{Style.RESET_ALL}"
                 )
                 await asyncio.sleep(1)
 
                 print(
                     f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().astimezone(wib).strftime('%x %X %Z')} ]{Style.RESET_ALL}"
                     f"{Fore.WHITE + Style.BRIGHT} | {Style.RESET_ALL}"
-                    f"{Fore.BLUE + Style.BRIGHT}Try With The Next Proxy,{Style.RESET_ALL}"
-                    f"{Fore.YELLOW + Style.BRIGHT} Wait... {Style.RESET_ALL}",
+                    f"{Fore.YELLOW + Style.BRIGHT}Try With Next Proxy...{Style.RESET_ALL}",
                     end="\r",
                     flush=True
                 )
@@ -387,8 +387,7 @@ class Nodepay:
             self.log(
                 f"{Fore.MAGENTA + Style.BRIGHT}[ Account{Style.RESET_ALL}"
                 f"{Fore.WHITE + Style.BRIGHT} {username} {Style.RESET_ALL}"
-                f"{Fore.GREEN + Style.BRIGHT}Login Success{Style.RESET_ALL}"
-                f"{Fore.MAGENTA + Style.BRIGHT} ] [ Earning{Style.RESET_ALL}"
+                f"{Fore.MAGENTA + Style.BRIGHT}] [ Earning{Style.RESET_ALL}"
                 f"{Fore.WHITE + Style.BRIGHT} Total {earn['total_earning']} Points {Style.RESET_ALL}"
                 f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
                 f"{Fore.WHITE + Style.BRIGHT} Today {earn['today_earning']} Points {Style.RESET_ALL}"
@@ -448,8 +447,7 @@ class Nodepay:
             print(
                 f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().astimezone(wib).strftime('%x %X %Z')} ]{Style.RESET_ALL}"
                 f"{Fore.WHITE + Style.BRIGHT} | {Style.RESET_ALL}"
-                f"{Fore.BLUE + Style.BRIGHT}Try to Sent Ping,{Style.RESET_ALL}"
-                f"{Fore.YELLOW + Style.BRIGHT} Wait... {Style.RESET_ALL}",
+                f"{Fore.YELLOW + Style.BRIGHT}Try to Sent Ping...{Style.RESET_ALL}",
                 end="\r",
                 flush=True
             )
