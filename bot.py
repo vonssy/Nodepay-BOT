@@ -232,9 +232,11 @@ class Nodepay:
         while True:
             earning = await self.users_earning(token, username, proxy)
             if earning:
-                season_name = earning['season_name']
-                today_point = earning['today_earning']
-                total_point = earning['total_earning']
+                season_name = earning.get('season_name', 'Season #N/A')
+                today_point = earning.get('today_earning', 'N/A')
+                total_point = earning.get('total_earning', 'N/A')
+                current_point = earning.get('current_point', 'N/A')
+                pending_point = earning.get('pending_point', 'N/A')
 
                 self.log(
                     f"{Fore.CYAN + Style.BRIGHT}[ Account:{Style.RESET_ALL}"
@@ -244,6 +246,10 @@ class Nodepay:
                     f"{Fore.WHITE + Style.BRIGHT}Today {today_point} PTS{Style.RESET_ALL}"
                     f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
                     f"{Fore.WHITE + Style.BRIGHT}Total {total_point} PTS{Style.RESET_ALL}"
+                    f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
+                    f"{Fore.WHITE + Style.BRIGHT}Current {current_point} PTS{Style.RESET_ALL}"
+                    f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
+                    f"{Fore.WHITE + Style.BRIGHT}Pending {pending_point} PTS{Style.RESET_ALL}"
                     f"{Fore.CYAN + Style.BRIGHT} ]{Style.RESET_ALL}"
                 )
             else:
