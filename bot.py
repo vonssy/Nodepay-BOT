@@ -500,7 +500,7 @@ class Nodepay:
     
     async def main(self):
         try:
-            with open('data.txt', 'r') as file:
+            with open('tokens.txt', 'r') as file:
                 tokens = [line.strip() for line in file if line.strip()]
 
             use_proxy_choice = await self.question()
