@@ -232,6 +232,7 @@ class Nodepay:
         while True:
             earning = await self.users_earning(token, username, proxy)
             if earning:
+                season_name = earning['season_name']
                 today_point = earning['today_earning']
                 total_point = earning['total_earning']
 
@@ -239,10 +240,10 @@ class Nodepay:
                     f"{Fore.CYAN + Style.BRIGHT}[ Account:{Style.RESET_ALL}"
                     f"{Fore.WHITE + Style.BRIGHT} {username} {Style.RESET_ALL}"
                     f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
-                    f"{Fore.CYAN + Style.BRIGHT} Earning: {Style.RESET_ALL}"
-                    f"{Fore.WHITE + Style.BRIGHT}Total {today_point}PTS{Style.RESET_ALL}"
+                    f"{Fore.CYAN + Style.BRIGHT} Earning {season_name}: {Style.RESET_ALL}"
+                    f"{Fore.WHITE + Style.BRIGHT}Today {today_point} PTS{Style.RESET_ALL}"
                     f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
-                    f"{Fore.WHITE + Style.BRIGHT}Today {total_point}PTS{Style.RESET_ALL}"
+                    f"{Fore.WHITE + Style.BRIGHT}Total {total_point} PTS{Style.RESET_ALL}"
                     f"{Fore.CYAN + Style.BRIGHT} ]{Style.RESET_ALL}"
                 )
             else:
@@ -254,7 +255,7 @@ class Nodepay:
                     f"{Fore.RED + Style.BRIGHT}GET Earning Data Failed{Style.RESET_ALL}"
                     f"{Fore.CYAN + Style.BRIGHT} ]{Style.RESET_ALL}"
                 )
-            await asyncio.sleep(300)
+            await asyncio.sleep(30 * 60)
 
     async def process_missions(self, token: str, username: str, proxy=None):
         while True:
@@ -315,7 +316,7 @@ class Nodepay:
                     f"{Fore.RED + Style.BRIGHT}GET Missions Data Failed{Style.RESET_ALL}"
                     f"{Fore.CYAN + Style.BRIGHT} ]{Style.RESET_ALL}"
                 )
-            await asyncio.sleep(86400)
+            await asyncio.sleep(24 * 60 * 60)
 
     def send_ping(self, token: str, username: str, id: str, browser_id: str, proxy: str, retries=60):
         url = "https://nw.nodepay.org/api/network/ping"
@@ -421,10 +422,10 @@ class Nodepay:
             print(
                 f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().astimezone(wib).strftime('%x %X %Z')} ]{Style.RESET_ALL}"
                 f"{Fore.WHITE + Style.BRIGHT} | {Style.RESET_ALL}"
-                f"{Fore.BLUE + Style.BRIGHT}Wait For 1 Minutes For Next Ping...{Style.RESET_ALL}",
+                f"{Fore.BLUE + Style.BRIGHT}Wait For 55 Minutes For Next Ping...{Style.RESET_ALL}",
                 end="\r"
             )
-            await asyncio.sleep(60)
+            await asyncio.sleep(55 * 60)
         
     async def question(self):
         while True:
