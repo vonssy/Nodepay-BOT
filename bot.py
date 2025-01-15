@@ -241,7 +241,7 @@ class Nodepay:
                     f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
                     f"{Fore.CYAN + Style.BRIGHT} Earning: {Style.RESET_ALL}"
                     f"{Fore.WHITE + Style.BRIGHT}Total {today_point}PTS{Style.RESET_ALL}"
-                    f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
+                    f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
                     f"{Fore.WHITE + Style.BRIGHT}Today {total_point}PTS{Style.RESET_ALL}"
                     f"{Fore.CYAN + Style.BRIGHT} ]{Style.RESET_ALL}"
                 )
@@ -365,7 +365,7 @@ class Nodepay:
             print(
                 f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().astimezone(wib).strftime('%x %X %Z')} ]{Style.RESET_ALL}"
                 f"{Fore.WHITE + Style.BRIGHT} | {Style.RESET_ALL}"
-                f"{Fore.YELLOW + Style.BRIGHT}Try to Sent Ping...{Style.RESET_ALL}",
+                f"{Fore.YELLOW + Style.BRIGHT}Try to Sent Ping...{Style.RESET_ALL}                                   ",
                 end="\r",
                 flush=True
             )
