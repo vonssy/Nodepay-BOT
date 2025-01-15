@@ -254,7 +254,7 @@ class Nodepay:
                     f"{Fore.RED + Style.BRIGHT}GET Earning Data Failed{Style.RESET_ALL}"
                     f"{Fore.CYAN + Style.BRIGHT} ]{Style.RESET_ALL}"
                 )
-            await asyncio.sleep(600)
+            await asyncio.sleep(300)
 
     async def process_missions(self, token: str, username: str, proxy=None):
         while True:
@@ -317,11 +317,11 @@ class Nodepay:
                 )
             await asyncio.sleep(86400)
 
-    def send_ping(self, token: str, username: str, id: str, proxy: str, retries=60):
+    def send_ping(self, token: str, username: str, id: str, browser_id: str, proxy: str, retries=60):
         url = "https://nw.nodepay.org/api/network/ping"
         data = json.dumps({
             "id":id, 
-            "browser_id":str(uuid.uuid4()), 
+            "browser_id":browser_id, 
             "timestamp":int(time.time()), 
             "version":"2.2.7"
         })
@@ -359,7 +359,7 @@ class Nodepay:
                 
                 return None
         
-    async def connection_state(self, token: str, username: str, id: str, proxy: str, connection_count: int):
+    async def connection_state(self, token: str, username: str, id: str, browser_id: str, proxy: str, connection_count: int):
         ping_count = 1
         while True:
             print(
@@ -371,7 +371,7 @@ class Nodepay:
             )
             await asyncio.sleep(1)
 
-            result = await asyncio.to_thread(self.send_ping, token, username, id, proxy)
+            result = await asyncio.to_thread(self.send_ping, token, username, id, browser_id, proxy)
             if result and isinstance(result, dict):
                 ip_score = result.get("ip_score")
                 if ip_score is not None:
@@ -382,15 +382,18 @@ class Nodepay:
                         f"{Fore.CYAN + Style.BRIGHT} Connection: {Style.RESET_ALL}"
                         f"{Fore.WHITE + Style.BRIGHT}{connection_count}{Style.RESET_ALL}"
                         f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
-                        f"{Fore.CYAN + Style.BRIGHT}Proxy:{Style.RESET_ALL}"
-                        f"{Fore.WHITE + Style.BRIGHT} {proxy} {Style.RESET_ALL}"
+                        f"{Fore.CYAN + Style.BRIGHT}Browser Id:{Style.RESET_ALL}"
+                        f"{Fore.WHITE + Style.BRIGHT} {browser_id} {Style.RESET_ALL}"
                         f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
-                        f"{Fore.CYAN + Style.BRIGHT} Status: {Style.RESET_ALL}"
-                        f"{Fore.GREEN + Style.BRIGHT}PING {ping_count} Success{Style.RESET_ALL}"
+                        f"{Fore.CYAN + Style.BRIGHT} Proxy: {Style.RESET_ALL}"
+                        f"{Fore.WHITE + Style.BRIGHT}{proxy}{Style.RESET_ALL}"
                         f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
-                        f"{Fore.CYAN + Style.BRIGHT}IP Score:{Style.RESET_ALL}"
-                        f"{Fore.WHITE + Style.BRIGHT} {ip_score} {Style.RESET_ALL}"
-                        f"{Fore.CYAN + Style.BRIGHT}]{Style.RESET_ALL}"
+                        f"{Fore.CYAN + Style.BRIGHT}Status:{Style.RESET_ALL}"
+                        f"{Fore.GREEN + Style.BRIGHT} PING {ping_count} Success {Style.RESET_ALL}"
+                        f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
+                        f"{Fore.CYAN + Style.BRIGHT} IP Score: {Style.RESET_ALL}"
+                        f"{Fore.WHITE + Style.BRIGHT}{ip_score}{Style.RESET_ALL}"
+                        f"{Fore.CYAN + Style.BRIGHT} ]{Style.RESET_ALL}"
                     )
             else:
                 self.log(
@@ -400,12 +403,15 @@ class Nodepay:
                     f"{Fore.CYAN + Style.BRIGHT} Connection: {Style.RESET_ALL}"
                     f"{Fore.WHITE + Style.BRIGHT}{connection_count}{Style.RESET_ALL}"
                     f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
-                    f"{Fore.CYAN + Style.BRIGHT}Proxy:{Style.RESET_ALL}"
-                    f"{Fore.WHITE + Style.BRIGHT} {proxy} {Style.RESET_ALL}"
+                    f"{Fore.CYAN + Style.BRIGHT}Browser Id:{Style.RESET_ALL}"
+                    f"{Fore.WHITE + Style.BRIGHT} {browser_id} {Style.RESET_ALL}"
                     f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
-                    f"{Fore.CYAN + Style.BRIGHT} Status: {Style.RESET_ALL}"
-                    f"{Fore.YELLOW + Style.BRIGHT}PING {ping_count} Failed{Style.RESET_ALL}"
-                    f"{Fore.CYAN + Style.BRIGHT} ]{Style.RESET_ALL}"
+                    f"{Fore.CYAN + Style.BRIGHT} Proxy: {Style.RESET_ALL}"
+                    f"{Fore.WHITE + Style.BRIGHT}{proxy}{Style.RESET_ALL}"
+                    f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
+                    f"{Fore.CYAN + Style.BRIGHT}Status:{Style.RESET_ALL}"
+                    f"{Fore.YELLOW + Style.BRIGHT} PING {ping_count} Failed {Style.RESET_ALL}"
+                    f"{Fore.CYAN + Style.BRIGHT}]{Style.RESET_ALL}"
                 )
                 if proxy:
                     proxy = self.get_next_proxy()
@@ -486,14 +492,15 @@ class Nodepay:
 
             tasks = []
             for i, proxy in enumerate(proxies):
+                browser_id = str(uuid.uuid4())
                 connection_count = i + 1
-                tasks.append(asyncio.create_task(self.connection_state(token, username, id, proxy, connection_count)))
+                tasks.append(asyncio.create_task(self.connection_state(token, username, id, browser_id, proxy, connection_count)))
 
             await asyncio.gather(*tasks)
     
     async def main(self):
         try:
-            with open('tokens.txt', 'r') as file:
+            with open('data.txt', 'r') as file:
                 tokens = [line.strip() for line in file if line.strip()]
 
             use_proxy_choice = await self.question()
