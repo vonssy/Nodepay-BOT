@@ -7,12 +7,14 @@ Nodepay BOT
 ## Fitur
 
   - Auto Get Account Information
-  - Auto Run With Auto Proxy if u Choose 1 [Use [Monosans Proxy](https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/all.txt)]
-  - Auto Run With Manual Proxy if u Choose 2 [Paste Ur personal proxy in manual_proxy.txt]
+  - Auto Run With [Monosans](https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/all.txt) Proxy - Choose 1
+  - Auto Run With Private Proxy - Choose 2
+  - Auto Run Without Proxy - Choose 3
   - Auto Complete Available Tasks
-  - Auto Connect With 3 Connection
-  - Auto Send Ping Every 1 Minutes
+  - Auto Send Ping Every 55 Minutes
   - Multi Accounts With Threads
+
+- Note: auto connects 3 connections if u using proxies and only 1 if not.
 
 ## Requiremnets
 
@@ -37,11 +39,11 @@ Nodepay BOT
 
 - **tokens.txt:** You will find the file `tokens.txt` inside the project directory. Make sure `tokens.txt` contains data that matches the format expected by the script. Here are examples of file formats:
   ```bash
-  eyjxxxx1
-  eyjxxxx2
+    eyjxxxx1
+    eyjxxxx2
   ```
 
-- **manual_proxy.txt:** You will find the file `manual_proxy.txt` inside the project directory. Make sure `manual_proxy.txt` contains data that matches the format expected by the script. Here are examples of file formats:
+- **proxy.txt:** You will find the file `proxy.txt` inside the project directory. Make sure `proxy.txt` contains data that matches the format expected by the script. Here are examples of file formats:
   ```bash
     ip:port # Default Protcol HTTP.
     protocol://ip:port
