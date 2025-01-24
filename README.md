@@ -4,7 +4,7 @@ Nodepay BOT
 - Register Here : [Nodepay](https://app.nodepay.ai/register?ref=ydqgY3hNlgl6KaD)
 - Use Code : ydqgY3hNlgl6KaD
 
-## Fitur
+## Features
 
   - Auto Get Account Information
   - Auto Run With [Monosans](https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/all.txt) Proxy - Choose 1
@@ -14,7 +14,7 @@ Nodepay BOT
   - Auto Send Ping Every 55 Minutes
   - Multi Accounts With Threads
 
-- Note: auto connects 3 connections if u using proxies and only 1 if not.
+Note: auto connects 3 connections if u using proxies and only 1 if not.
 
 ## Requiremnets
 
