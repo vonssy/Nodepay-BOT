@@ -234,19 +234,38 @@ class Nodepay:
                     continue
 
                 return self.print_message(username, proxy, Fore.RED, f"Complete Available Failed: {Fore.YELLOW+Style.BRIGHT}{str(e)}")
-            
-    async def get_user_data(self, token: str, use_proxy: bool):
-        proxy = self.get_next_proxy_for_account(token) if use_proxy else None
-        user = None
-        while user is None:
-            user = await self.user_session(token, proxy)
-            if not user:
+
+    async def send_ping(self, token: str, username: str, user_id: str, browser_id: str, use_proxy: bool, count: int, proxy=None, retries=60):
+        url = "https://nw.nodepay.org/api/network/ping"
+        data = json.dumps({"id":user_id, "browser_id":browser_id, "timestamp":int(time.time()), "version":"2.2.7"})
+        headers = {
+            "Accept": "*/*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Authorization": f"Bearer {token}",
+            "Content-Length": str(len(data)),
+            "Content-Type": "application/json",
+            "Origin": "chrome-extension://lgmpfmgeabnnlemejacfljbmonaomfmm",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "cross-site",
+            "User-Agent": FakeUserAgent().random
+        }
+        for attempt in range(retries):
+            try:
+                response = requests.post(url=url, headers=headers, data=data, proxy=proxy, timeout=60, impersonate="safari15_5")
+                response.raise_for_status()
+                result = response.json()
+                return result['data']['ip_score']
+            except (Exception, requests.RequestsError) as e:
+                if attempt < retries - 1:
+                    await asyncio.sleep(2)
+                    continue
+
+                self.print_message(username, proxy, Fore.RED, f"PING Broswer ID {count} Failed: {Fore.YELLOW+Style.BRIGHT}{str(e)}")
+
                 proxy = self.rotate_proxy_for_account(token) if use_proxy else None
-                continue
 
-            self.print_message(self.mask_account(token), proxy, Fore.GREEN, f"GET User ID Success")
-
-            return user
+                return None
 
     async def process_user_earning(self, token: str, username: str, use_proxy: bool):
         while True:
@@ -310,38 +329,6 @@ class Nodepay:
                     )
 
             await asyncio.sleep(24 * 60 * 60)
-
-    async def send_ping(self, token: str, username: str, user_id: str, browser_id: str, use_proxy: bool, count: int, proxy=None, retries=60):
-        url = "https://nw.nodepay.org/api/network/ping"
-        data = json.dumps({"id":user_id, "browser_id":browser_id, "timestamp":int(time.time()), "version":"2.2.7"})
-        headers = {
-            "Accept": "*/*",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Authorization": f"Bearer {token}",
-            "Content-Length": str(len(data)),
-            "Content-Type": "application/json",
-            "Origin": "chrome-extension://lgmpfmgeabnnlemejacfljbmonaomfmm",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "cross-site",
-            "User-Agent": FakeUserAgent().random
-        }
-        for attempt in range(retries):
-            try:
-                response = requests.post(url=url, headers=headers, data=data, proxy=proxy, timeout=60, impersonate="safari15_5")
-                response.raise_for_status()
-                result = response.json()
-                return result['data']['ip_score']
-            except (Exception, requests.RequestsError) as e:
-                if attempt < retries - 1:
-                    await asyncio.sleep(2)
-                    continue
-
-                self.print_message(username, proxy, Fore.RED, f"PING Broswer ID {count} Failed: {Fore.YELLOW+Style.BRIGHT}{str(e)}")
-
-                proxy = self.rotate_proxy_for_account(token) if use_proxy else None
-
-                return None
         
     async def connection_state(self, token: str, username: str, user_id: str, browser_id: str, use_proxy: bool, count: int, proxy=None):
         while True:
@@ -389,6 +376,19 @@ class Nodepay:
             tasks.append(self.connection_state(token, username, user_id, browser_id, use_proxy, count, proxy))
 
         await asyncio.gather(*tasks)
+
+    async def get_user_data(self, token: str, use_proxy: bool):
+        proxy = self.get_next_proxy_for_account(token) if use_proxy else None
+        user = None
+        while user is None:
+            user = await self.user_session(token, proxy)
+            if not user:
+                proxy = self.rotate_proxy_for_account(token) if use_proxy else None
+                continue
+
+            self.print_message(self.mask_account(token), proxy, Fore.GREEN, f"GET User ID Success")
+
+            return user
         
     async def process_accounts(self, token: str, use_proxy: bool):
         user = await self.get_user_data(token, use_proxy)
