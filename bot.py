@@ -290,7 +290,7 @@ class Nodepay:
                     f"{Fore.WHITE + Style.BRIGHT}Pending {pending_point} PTS{Style.RESET_ALL}"
                 )
 
-            await asyncio.sleep(60 * 60)
+            await asyncio.sleep(30 * 60)
 
     async def process_user_missions(self, token: str, username: str, use_proxy: bool):
         while True:
@@ -328,7 +328,7 @@ class Nodepay:
                         f"All Available Mission Is Completed"
                     )
 
-            await asyncio.sleep(24 * 60 * 60)
+            await asyncio.sleep(12 * 60 * 60)
         
     async def connection_state(self, token: str, username: str, user_id: str, browser_id: str, use_proxy: bool, count: int, proxy=None):
         while True:
