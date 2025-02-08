@@ -445,7 +445,6 @@ class Nodepay:
                     num_id = i + 1
                     browser_id = self.generate_browser_id()
                     tasks.append(asyncio.create_task(self.connection_state(token, user_id, username, browser_id, num_id, use_proxy)))
-
             else:
                 num_id = 1
                 browser_id = self.generate_browser_id()

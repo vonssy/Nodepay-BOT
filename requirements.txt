@@ -1,5 +1,5 @@
 aiohttp
-cloudscraper
+curl-cffi
 aiohttp-socks
 fake-useragent
 colorama
