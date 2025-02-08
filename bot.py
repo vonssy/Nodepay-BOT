@@ -173,6 +173,11 @@ class Nodepay:
             try:
                 async with ClientSession(connector=connector, timeout=ClientTimeout(total=60)) as session:
                     async with session.post(url=url, headers=headers, json={}) as response:
+                        if response.status == 401:
+                            return self.print_message(self.mask_account(token), proxy, Fore.RED, 
+                                f"GET User Session Failed: {Fore.YELLOW+Style.BRIGHT}Np Token Expired"
+                            )
+                        
                         response.raise_for_status()
                         result = await response.json()
                         return result['data']
@@ -195,6 +200,11 @@ class Nodepay:
             try:
                 async with ClientSession(connector=connector, timeout=ClientTimeout(total=60)) as session:
                     async with session.get(url=url, headers=headers) as response:
+                        if response.status == 401:
+                            return self.print_message(username, proxy, Fore.RED, 
+                                f"GET Earning Data Failed: {Fore.YELLOW+Style.BRIGHT}Np Token Expired"
+                            )
+                        
                         response.raise_for_status()
                         result = await response.json()
                         return result['data']
@@ -217,6 +227,11 @@ class Nodepay:
             try:
                 async with ClientSession(connector=connector, timeout=ClientTimeout(total=60)) as session:
                     async with session.get(url=url, headers=headers) as response:
+                        if response.status == 401:
+                            return self.print_message(username, proxy, Fore.RED, 
+                                f"GET Available Mission Failed: {Fore.YELLOW+Style.BRIGHT}Np Token Expired"
+                            )
+                        
                         response.raise_for_status()
                         result = await response.json()
                         return result['data']
@@ -241,6 +256,11 @@ class Nodepay:
             try:
                 async with ClientSession(connector=connector, timeout=ClientTimeout(total=60)) as session:
                     async with session.post(url=url, headers=headers, data=data) as response:
+                        if response.status == 401:
+                            return self.print_message(username, proxy, Fore.RED, 
+                                f"Complete Available Mission Failed: {Fore.YELLOW+Style.BRIGHT}Np Token Expired"
+                            )
+                        
                         response.raise_for_status()
                         result = await response.json()
                         return result['data']
@@ -269,6 +289,17 @@ class Nodepay:
         for attempt in range(retries):
             try:
                 response = await asyncio.to_thread(requests.post, url=url, headers=headers, data=data, proxy=proxy, timeout=60, impersonate="safari15_5")
+                if response.status_code == 401:
+                    return self.print_message(username, proxy, Fore.RED, 
+                        f"PING Failed"
+                        f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
+                        f"{Fore.CYAN + Style.BRIGHT}Browser ID {num_id}:{Style.RESET_ALL}"
+                        f"{Fore.WHITE + Style.BRIGHT} {browser_id} {Style.RESET_ALL}"
+                        f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
+                        f"{Fore.CYAN + Style.BRIGHT} Reason: {Style.RESET_ALL}"
+                        f"{Fore.YELLOW + Style.BRIGHT}Np Token Expired{Style.RESET_ALL}"
+                    )
+                        
                 response.raise_for_status()
                 result = response.json()
                 return result['data']['ip_score']
