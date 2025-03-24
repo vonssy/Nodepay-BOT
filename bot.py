@@ -272,18 +272,19 @@ class Nodepay:
                 return self.print_message(username, proxy, Fore.RED, f"Complete Available Mission Failed: {Fore.YELLOW+Style.BRIGHT}{str(e)}")
             
     async def send_ping(self, token: str, user_id: str, username: str, browser_id: str, num_id: int, use_proxy: bool, proxy=None, retries=5):
-        url = "https://nw.nodepay.org/api/network/ping"
-        data = json.dumps({"id":user_id, "browser_id":browser_id, "timestamp":int(time.time()), "version":"2.2.7"})
+        url = "https://nw.nodepay.ai/api/network/ping"
+        data = json.dumps({"id":user_id, "browser_id":browser_id, "timestamp":int(time.time()), "version":"2.2.8"})
         headers = {
             "Accept": "*/*",
-            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
             "Authorization": f"Bearer {token}",
             "Content-Length": str(len(data)),
             "Content-Type": "application/json",
             "Origin": "chrome-extension://lgmpfmgeabnnlemejacfljbmonaomfmm",
             "Sec-Fetch-Dest": "empty",
             "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "cross-site",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-Storage-Access": "active",
             "User-Agent": FakeUserAgent().random
         }
         for attempt in range(retries):
@@ -445,6 +446,7 @@ class Nodepay:
                     num_id = i + 1
                     browser_id = self.generate_browser_id()
                     tasks.append(asyncio.create_task(self.connection_state(token, user_id, username, browser_id, num_id, use_proxy)))
+
             else:
                 num_id = 1
                 browser_id = self.generate_browser_id()
