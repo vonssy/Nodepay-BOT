@@ -2,19 +2,20 @@
 Nodepay BOT
 
 - Register Here : [Nodepay](https://app.nodepay.ai/register?ref=ydqgY3hNlgl6KaD)
-- Use Code : ydqgY3hNlgl6KaD
+- Use Code `ydqgY3hNlgl6KaD`
 
 ## Features
 
   - Auto Get Account Information
-  - Auto Run With [Monosans](https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/all.txt) Proxy - Choose 1
-  - Auto Run With Private Proxy - Choose 2
-  - Auto Run Without Proxy - Choose 3
-  - Auto Complete Available Tasks
+  - Auto Run With [Free Proxyscrape](https://proxyscrape.com/free-proxy-list) Proxy - `Choose 1`
+  - Auto Run With Private Proxy - `Choose 2`
+  - Auto Run Without Proxy - `Choose 3`
+  - Auto Rotate Invalid Proxies - `y` or `n`
+  - Auto Claim Daily & Weekly Check-In
   - Auto Send Ping Every 55 Minutes
   - Multi Accounts With Threads
 
-Note: auto connects 3 connections if u using proxies and only 1 if not.
+### Note: auto connects 3 Nodes if u using proxies and only 1 if not.
 
 ## Requiremnets
 
@@ -37,10 +38,18 @@ Note: auto connects 3 connections if u using proxies and only 1 if not.
 
 ## Configuration
 
-- **tokens.txt:** You will find the file `tokens.txt` inside the project directory. Make sure `tokens.txt` contains data that matches the format expected by the script. Here are examples of file formats:
-  ```bash
-    eyjxxxx1
-    eyjxxxx2
+- **accounts.json:** You will find the file `accounts.json` inside the project directory. Make sure `accounts.json` contains data that matches the format expected by the script. Here are examples of file formats:
+  ```json
+    [
+        {
+            "Email": "your_email_address_1",
+            "npToken": "your_np_token_1"
+        },
+        {
+            "Email": "your_email_address_2",
+            "npToken": "your_np_token_2"
+        }
+    ]
   ```
 
 - **proxy.txt:** You will find the file `proxy.txt` inside the project directory. Make sure `proxy.txt` contains data that matches the format expected by the script. Here are examples of file formats:
