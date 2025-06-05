@@ -72,17 +72,17 @@ class Nodepay:
             if use_proxy_choice == 1:
                 response = await asyncio.to_thread(requests.get, "https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=text")
                 response.raise_for_status()
-                content = response.text.strip()
+                content = response.text
                 with open(filename, 'w') as f:
                     f.write(content)
-                self.proxies = content.splitlines()
+                self.proxies = [line.strip() for line in content.splitlines() if line.strip()]
             else:
                 if not os.path.exists(filename):
                     self.log(f"{Fore.RED + Style.BRIGHT}File {filename} Not Found.{Style.RESET_ALL}")
                     return
                 with open(filename, 'r') as f:
-                    self.proxies = f.read().splitlines()
-            
+                    self.proxies = [line.strip() for line in f.read().splitlines() if line.strip()]
+    
             if not self.proxies:
                 self.log(f"{Fore.RED + Style.BRIGHT}No Proxies Found.{Style.RESET_ALL}")
                 return
