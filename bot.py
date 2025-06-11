@@ -52,7 +52,7 @@ class Nodepay:
         return f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
     
     def load_accounts(self):
-        filename = "accounts.json"
+        filename = "tokens.json"
         try:
             if not os.path.exists(filename):
                 self.log(f"{Fore.RED}File {filename} Not Found.{Style.RESET_ALL}")
@@ -226,14 +226,17 @@ class Nodepay:
             try:
                 response = await asyncio.to_thread(requests.post, url=url, headers=headers, json={}, proxy=proxy, timeout=60, impersonate="chrome110", verify=False)
                 if response.status_code == 401:
-                    return self.print_session_message(email, proxy, Fore.RED, f"GET Session Failed: {Fore.YELLOW + Style.BRIGHT}Np Token Already Expired{Style.RESET_ALL}")
+                    self.print_session_message(email, proxy, Fore.RED, f"GET Session Failed: {Fore.YELLOW + Style.BRIGHT}Np Token Already Expired{Style.RESET_ALL}")
+                    return None
                 response.raise_for_status()
                 return response.json()
             except Exception as e:
                 if attempt < retries - 1:
                     await asyncio.sleep(5)
                     continue
-                return self.print_session_message(email, proxy, Fore.RED, f"GET Session Failed: {Fore.YELLOW + Style.BRIGHT}{str(e)}{Style.RESET_ALL}")
+                self.print_session_message(email, proxy, Fore.RED, f"GET Session Failed: {Fore.YELLOW + Style.BRIGHT}{str(e)}{Style.RESET_ALL}")
+
+        return None
 
     async def mission_lists(self, email: str, proxy=None, retries=5):
         url = f"{self.SESSION_API}/api/mission"
@@ -245,14 +248,17 @@ class Nodepay:
             try:
                 response = await asyncio.to_thread(requests.get, url=url, headers=headers, proxy=proxy, timeout=60, impersonate="chrome110", verify=False)
                 if response.status_code == 401:
-                    return self.print_session_message(email, proxy, Fore.RED, f"GET Mission Lists Failed: {Fore.YELLOW + Style.BRIGHT}Np Token Already Expired{Style.RESET_ALL}")
+                    self.print_session_message(email, proxy, Fore.RED, f"GET Mission Lists Failed: {Fore.YELLOW + Style.BRIGHT}Np Token Already Expired{Style.RESET_ALL}")
+                    return None
                 response.raise_for_status()
                 return response.json()
             except Exception as e:
                 if attempt < retries - 1:
                     await asyncio.sleep(5)
                     continue
-                return self.print_session_message(email, proxy, Fore.RED, f"GET Mission Lists Failed: {Fore.YELLOW + Style.BRIGHT}{str(e)}{Style.RESET_ALL}")
+                self.print_session_message(email, proxy, Fore.RED, f"GET Mission Lists Failed: {Fore.YELLOW + Style.BRIGHT}{str(e)}{Style.RESET_ALL}")
+
+        return None
 
     async def complete_mission(self, email: str, mission_id: str, title: str, proxy=None, retries=5):
         url = f"{self.SESSION_API}/api/mission/complete-mission"
@@ -267,22 +273,25 @@ class Nodepay:
             try:
                 response = await asyncio.to_thread(requests.post, url=url, headers=headers, data=data, proxy=proxy, timeout=60, impersonate="chrome110", verify=False)
                 if response.status_code == 401:
-                    return self.print_session_message(email, proxy, Fore.WHITE, f"Mission {title} "
+                    self.print_session_message(email, proxy, Fore.WHITE, f"Mission {title} "
                         f"{Fore.RED + Style.BRIGHT}Not Completed{Style.RESET_ALL}"
                         f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
                         f"{Fore.YELLOW + Style.BRIGHT}Np Token Already Expired{Style.RESET_ALL}"
                     )
+                    return None
                 response.raise_for_status()
                 return response.json()
             except Exception as e:
                 if attempt < retries - 1:
                     await asyncio.sleep(5)
                     continue
-                return self.print_session_message(email, proxy, Fore.WHITE, f"Mission {title} "
+                self.print_session_message(email, proxy, Fore.WHITE, f"Mission {title} "
                     f"{Fore.RED + Style.BRIGHT}Not Completed{Style.RESET_ALL}"
                     f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
                     f"{Fore.YELLOW + Style.BRIGHT}{str(e)}{Style.RESET_ALL}"
                 )
+
+        return None
             
     async def send_ping(self, email: str, idx: int, browser_id: str, proxy=None, retries=5):
         url = f"{self.PING_API}/api/network/ping"
@@ -304,42 +313,22 @@ class Nodepay:
             try:
                 response = await asyncio.to_thread(requests.post, url=url, headers=headers, data=data, proxy=proxy, timeout=60, impersonate="chrome110", verify=False)
                 if response.status_code == 401:
-                    return self.print_ping_message(email, idx, browser_id, proxy, Fore.RED, f"PING Failed: {Fore.YELLOW + Style.BRIGHT}Np Token Already Expired{Style.RESET_ALL}")
+                    self.print_ping_message(email, idx, browser_id, proxy, Fore.RED, f"PING Failed: {Fore.YELLOW + Style.BRIGHT}Np Token Already Expired{Style.RESET_ALL}")
+                    return None
                 response.raise_for_status()
                 return response.json()
             except Exception as e:
                 if attempt < retries - 1:
                     await asyncio.sleep(5)
                     continue
-                return self.print_ping_message(email, idx, browser_id, proxy, Fore.RED, f"PING Failed: {Fore.YELLOW + Style.BRIGHT}{str(e)}{Style.RESET_ALL}")
+                self.print_ping_message(email, idx, browser_id, proxy, Fore.RED, f"PING Failed: {Fore.YELLOW + Style.BRIGHT}{str(e)}{Style.RESET_ALL}")
+
+        return None
             
     async def process_auth_session(self, email: str, use_proxy: bool, rotate_proxy: bool):
-        proxy = self.get_next_proxy_for_account(email) if use_proxy else None
-
-        if use_proxy:
-            while True:
-                session = await self.auth_session(email, proxy)
-                if session and session.get("msg") == "Success":
-                    season_name = session.get("data", {}).get("balance", {}).get("season_name") or "Season #N/A"
-                    current_amount = session.get("data", {}).get("balance", {}).get("current_amount") or "N/A"
-                    total_collected = session.get("data", {}).get("balance", {}).get("total_collected") or "N/A"
-
-                    self.print_session_message(email, proxy, Fore.GREEN, f"{season_name}"
-                        f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
-                        f"{Fore.CYAN + Style.BRIGHT}Today Earning:{Style.RESET_ALL}"
-                        f"{Fore.WHITE + Style.BRIGHT} {current_amount} PTS {Style.RESET_ALL}"
-                        f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
-                        f"{Fore.CYAN + Style.BRIGHT} Total Earning: {Style.RESET_ALL}"
-                        f"{Fore.WHITE + Style.BRIGHT}{total_collected} PTS{Style.RESET_ALL}"
-                    )
-                    return True
-
-                await asyncio.sleep(5)
-                if rotate_proxy:
-                    proxy = self.rotate_proxy_for_account(email)
-                continue
-
         while True:
+            proxy = self.get_next_proxy_for_account(email) if use_proxy else None
+
             session = await self.auth_session(email, proxy)
             if session and session.get("msg") == "Success":
                 season_name = session.get("data", {}).get("balance", {}).get("season_name") or "Season #N/A"
@@ -355,6 +344,9 @@ class Nodepay:
                     f"{Fore.WHITE + Style.BRIGHT}{total_collected} PTS{Style.RESET_ALL}"
                 )
                 return True
+
+            if rotate_proxy:
+                proxy = self.rotate_proxy_for_account(email)
 
             await asyncio.sleep(5)
             continue
@@ -416,9 +408,10 @@ class Nodepay:
                     )
                     break
 
-                await asyncio.sleep(5)
                 if rotate_proxy:
                     proxy = self.rotate_proxy_for_account(browser_id)
+
+                await asyncio.sleep(5)
                 continue
 
             print(
