@@ -315,6 +315,10 @@ class Nodepay:
                 if response.status_code == 401:
                     self.print_ping_message(email, idx, browser_id, proxy, Fore.RED, f"PING Failed: {Fore.YELLOW + Style.BRIGHT}Np Token Already Expired{Style.RESET_ALL}")
                     return None
+                elif response.status_code == 429:
+                    self.print_ping_message(email, idx, browser_id, proxy, Fore.RED, f"PING Failed: {Fore.YELLOW + Style.BRIGHT}Too Many Request, Retrying After 5 Minutes.{Style.RESET_ALL}")
+                    await asyncio.sleep(5 * 60)
+                    continue
                 response.raise_for_status()
                 return response.json()
             except Exception as e:
