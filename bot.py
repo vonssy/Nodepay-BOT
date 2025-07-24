@@ -1,28 +1,56 @@
 from curl_cffi import requests
-from fake_useragent import FakeUserAgent
+from http.cookies import SimpleCookie
 from datetime import datetime
 from colorama import *
-import asyncio, time, base64, json, os, uuid, pytz
+import asyncio, random, base64, uuid, time, json, os, pytz
 
 wib = pytz.timezone('Asia/Jakarta')
 
+USER_AGENT = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.91 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.127 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5615.138 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.5563.65 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.5481.178 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.133 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_6_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.93 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:115.0) Gecko/20100101 Firefox/115.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:114.0) Gecko/20100101 Firefox/114.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:113.0) Gecko/20100101 Firefox/113.0",
+    "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:115.0) Gecko/20100101 Firefox/115.0",
+    "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:113.0) Gecko/20100101 Firefox/113.0",
+    "Mozilla/5.0 (X11; Arch Linux; Linux x86_64; rv:112.0) Gecko/20100101 Firefox/112.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.127 Safari/537.36 Edg/113.0.1774.35",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5615.121 Safari/537.36 Edg/112.0.1722.64",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.5563.64 Safari/537.36 Edg/111.0.1661.54",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5615.137 Safari/537.36 Edg/112.0.1722.68",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5.1 Safari/605.1.15",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_6_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_7_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.91 Safari/537.36 OPR/99.0.4788.77",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.127 Safari/537.36 OPR/98.0.4759.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.91 Safari/537.36 Brave/1.52.129",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.126 Safari/537.36 Brave/1.51.110",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.91 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.127 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.91 Safari/537.36 Vivaldi/6.1.3035.100",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.126 Safari/537.36 Vivaldi/6.0.2979.22",
+    "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chromium/114.0.5735.91 Safari/537.36"
+]
+
 class Nodepay:
     def __init__(self) -> None:
-        self.headers = {
-            "Accept": "*/*",
-            "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
-            "Origin": "https://app.nodepay.ai",
-            "Referer": "https://app.nodepay.ai/",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-site",
-            "User-Agent": FakeUserAgent().random
-        }
         self.SESSION_API = "https://api.nodepay.ai"
         self.PING_API = "https://nw.nodepay.ai"
+        self.VERSION = "2.4.2"
+        self.HEADERS = {}
         self.proxies = []
         self.proxy_index = 0
         self.account_proxies = {}
+        self.cookies = {}
         self.np_tokens = {}
         self.user_ids = {}
 
@@ -39,7 +67,7 @@ class Nodepay:
     def welcome(self):
         print(
             f"""
-        {Fore.GREEN + Style.BRIGHT}Auto Ping {Fore.BLUE + Style.BRIGHT}Nodepay - BOT
+        {Fore.GREEN + Style.BRIGHT}Nodepay {Fore.BLUE + Style.BRIGHT}Auto BOT
             """
             f"""
         {Fore.GREEN + Style.BRIGHT}Rey? {Fore.YELLOW + Style.BRIGHT}<INI WATERMARK>
@@ -70,7 +98,7 @@ class Nodepay:
         filename = "proxy.txt"
         try:
             if use_proxy_choice == 1:
-                response = await asyncio.to_thread(requests.get, "https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=text")
+                response = await asyncio.to_thread(requests.get, "https://raw.githubusercontent.com/monosans/proxy-list/refs/heads/main/proxies/all.txt")
                 response.raise_for_status()
                 content = response.text
                 with open(filename, 'w') as f:
@@ -82,7 +110,7 @@ class Nodepay:
                     return
                 with open(filename, 'r') as f:
                     self.proxies = [line.strip() for line in f.read().splitlines() if line.strip()]
-    
+            
             if not self.proxies:
                 self.log(f"{Fore.RED + Style.BRIGHT}No Proxies Found.{Style.RESET_ALL}")
                 return
@@ -130,19 +158,22 @@ class Nodepay:
             return user_id, exp_time
         except Exception as e:
             return None, None
-            
-    def generate_ping_payload(self, email: str, browser_id: int):
-        payload = {
-            "id":self.user_ids[email], 
-            "browser_id":browser_id, 
-            "timestamp":int(time.time()), 
-            "version":"2.4.0"
-        }
-        return payload
-    
+        
     def generate_browser_id(self):
         browser_id = str(uuid.uuid4())
         return browser_id
+            
+    def generate_ping_payload(self, email: str, browser_id: str):
+        try:
+            payload = {
+                "id": self.user_ids[email], 
+                "browser_id": browser_id, 
+                "timestamp": int(time.time()), 
+                "version": self.VERSION
+            }
+            return payload
+        except Exception as e:
+            raise Exception(f"Generate Req Payload Failed: {e}")
     
     def mask_account(self, account):
         if "@" in account:
@@ -150,20 +181,7 @@ class Nodepay:
             mask_account = local[:3] + '*' * 3 + local[-3:]
             return f"{mask_account}@{domain}"
     
-    def print_session_message(self, account, proxy, color, message):
-        self.log(
-            f"{Fore.CYAN + Style.BRIGHT}[ Account:{Style.RESET_ALL}"
-            f"{Fore.WHITE + Style.BRIGHT} {self.mask_account(account)} {Style.RESET_ALL}"
-            f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
-            f"{Fore.CYAN + Style.BRIGHT} Proxy: {Style.RESET_ALL}"
-            f"{Fore.WHITE + Style.BRIGHT}{proxy}{Style.RESET_ALL}"
-            f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
-            f"{Fore.CYAN + Style.BRIGHT}Status:{Style.RESET_ALL}"
-            f"{color + Style.BRIGHT} {message} {Style.RESET_ALL}"
-            f"{Fore.CYAN + Style.BRIGHT}]{Style.RESET_ALL}"
-        )
-    
-    def print_ping_message(self, account, idx, browser_id, proxy, color, message):
+    def print_message(self, account, idx, browser_id, proxy, color, message):
         self.log(
             f"{Fore.CYAN + Style.BRIGHT}[ Account:{Style.RESET_ALL}"
             f"{Fore.WHITE + Style.BRIGHT} {self.mask_account(account)} {Style.RESET_ALL}"
@@ -213,241 +231,183 @@ class Nodepay:
                     print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter 'y' or 'n'.{Style.RESET_ALL}")
 
         return choose, rotate
-
-    async def auth_session(self, email: str, proxy=None, retries=5):
-        url = f"{self.SESSION_API}/api/auth/session"
-        headers = {
-            **self.headers,
-            "Authorization": f"Bearer {self.np_tokens[email]}",
-            "Content-Length": "2",
-            "Content-Type": "application/json"
-        }
-        for attempt in range(retries):
-            try:
-                response = await asyncio.to_thread(requests.post, url=url, headers=headers, json={}, proxy=proxy, timeout=60, impersonate="chrome110", verify=False)
-                if response.status_code == 401:
-                    self.print_session_message(email, proxy, Fore.RED, f"GET Session Failed: {Fore.YELLOW + Style.BRIGHT}Np Token Already Expired{Style.RESET_ALL}")
-                    return None
-                response.raise_for_status()
-                return response.json()
-            except Exception as e:
-                if attempt < retries - 1:
-                    await asyncio.sleep(5)
-                    continue
-                self.print_session_message(email, proxy, Fore.RED, f"GET Session Failed: {Fore.YELLOW + Style.BRIGHT}{str(e)}{Style.RESET_ALL}")
-
-        return None
-
-    async def mission_lists(self, email: str, proxy=None, retries=5):
-        url = f"{self.SESSION_API}/api/mission"
-        headers = {
-            **self.headers,
-            "Authorization": f"Bearer {self.np_tokens[email]}"
-        }
-        for attempt in range(retries):
-            try:
-                response = await asyncio.to_thread(requests.get, url=url, headers=headers, proxy=proxy, timeout=60, impersonate="chrome110", verify=False)
-                if response.status_code == 401:
-                    self.print_session_message(email, proxy, Fore.RED, f"GET Mission Lists Failed: {Fore.YELLOW + Style.BRIGHT}Np Token Already Expired{Style.RESET_ALL}")
-                    return None
-                response.raise_for_status()
-                return response.json()
-            except Exception as e:
-                if attempt < retries - 1:
-                    await asyncio.sleep(5)
-                    continue
-                self.print_session_message(email, proxy, Fore.RED, f"GET Mission Lists Failed: {Fore.YELLOW + Style.BRIGHT}{str(e)}{Style.RESET_ALL}")
-
-        return None
-
-    async def complete_mission(self, email: str, mission_id: str, title: str, proxy=None, retries=5):
-        url = f"{self.SESSION_API}/api/mission/complete-mission"
-        data = json.dumps({"mission_id":mission_id})
-        headers = {
-            **self.headers,
-            "Authorization": f"Bearer {self.np_tokens[email]}",
-            "Content-Length": str(len(data)),
-            "Content-Type": "application/json"
-        }
-        for attempt in range(retries):
-            try:
-                response = await asyncio.to_thread(requests.post, url=url, headers=headers, data=data, proxy=proxy, timeout=60, impersonate="chrome110", verify=False)
-                if response.status_code == 401:
-                    self.print_session_message(email, proxy, Fore.WHITE, f"Mission {title} "
-                        f"{Fore.RED + Style.BRIGHT}Not Completed{Style.RESET_ALL}"
-                        f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
-                        f"{Fore.YELLOW + Style.BRIGHT}Np Token Already Expired{Style.RESET_ALL}"
-                    )
-                    return None
-                response.raise_for_status()
-                return response.json()
-            except Exception as e:
-                if attempt < retries - 1:
-                    await asyncio.sleep(5)
-                    continue
-                self.print_session_message(email, proxy, Fore.WHITE, f"Mission {title} "
-                    f"{Fore.RED + Style.BRIGHT}Not Completed{Style.RESET_ALL}"
-                    f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
-                    f"{Fore.YELLOW + Style.BRIGHT}{str(e)}{Style.RESET_ALL}"
-                )
-
-        return None
+        
+    async def check_connection(self, email: str, idx: int, browser_id: str, proxy=None):
+        url = "https://api.ipify.org?format=json"
+        proxies = {"http":proxy, "https":proxy} if proxy else None
+        try:
+            response = await asyncio.to_thread(requests.get, url=url, proxies=proxies, timeout=30, impersonate="chrome110", verify=False)
+            response.raise_for_status()
+            return True
+        except Exception as e:
+            self.print_message(email, idx, browser_id, proxy, Fore.RED, f"Connection Not 200 OK: {Fore.YELLOW + Style.BRIGHT}{str(e)}{Style.RESET_ALL}")
+            return None
             
+    async def auth_session(self, email: str, idx: int, browser_id: str, proxy=None, retries=5):
+        url = f"{self.SESSION_API}/api/auth/session"
+        headers = self.HEADERS[f'{email}_{browser_id}'].copy()
+        headers["Authorization"] = f"Bearer {self.np_tokens[email]}"
+        headers["Content-Length"] = "2"
+        headers["Content-Type"] = "application/json"
+        for attempt in range(retries):
+            proxies = {"http":proxy, "https":proxy} if proxy else None
+            try:
+                response = await asyncio.to_thread(requests.post, url=url, headers=headers, json={}, proxies=proxies, timeout=60, impersonate="chrome110", verify=False)
+                response.raise_for_status()
+                raw_cookies = response.headers.get_list('set-cookie', [])
+                if raw_cookies:
+                    cookie = SimpleCookie()
+                    cookie.load("\n".join(raw_cookies))
+                    cookie_string = "; ".join([f"{key}={morsel.value}" for key, morsel in cookie.items()])
+                    self.cookies[f'{email}_{browser_id}'] = cookie_string
+                    
+                    return response.json()
+            except Exception as e:
+                if attempt < retries - 1:
+                    await asyncio.sleep(5)
+                    continue
+                self.print_message(email, idx, browser_id, proxy, Fore.RED, f"Auth Session Failed: {Fore.YELLOW + Style.BRIGHT}{str(e)}{Style.RESET_ALL}")
+
+        return None
+    
     async def send_ping(self, email: str, idx: int, browser_id: str, proxy=None, retries=5):
         url = f"{self.PING_API}/api/network/ping"
         data = json.dumps(self.generate_ping_payload(email, browser_id))
-        headers = {
-            "Accept": "*/*",
-            "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
-            "Authorization": f"Bearer {self.np_tokens[email]}",
-            "Content-Length": str(len(data)),
-            "Content-Type": "application/json",
-            "Origin": "chrome-extension://lgmpfmgeabnnlemejacfljbmonaomfmm",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "none",
-            "Sec-Fetch-Storage-Access": "active",
-            "User-Agent": FakeUserAgent().random
-        }
+        headers = self.HEADERS[f'{email}_{browser_id}'].copy()
+        headers["Authorization"] = f"Bearer {self.np_tokens[email]}"
+        headers["Content-Length"] = str(len(data))
+        headers["Content-Type"] = "application/json"
+        headers["Cookie"] = self.cookies[f'{email}_{browser_id}']
         for attempt in range(retries):
+            proxies = {"http":proxy, "https":proxy} if proxy else None
             try:
-                response = await asyncio.to_thread(requests.post, url=url, headers=headers, data=data, proxy=proxy, timeout=60, impersonate="chrome110", verify=False)
-                if response.status_code == 401:
-                    self.print_ping_message(email, idx, browser_id, proxy, Fore.RED, f"PING Failed: {Fore.YELLOW + Style.BRIGHT}Np Token Already Expired{Style.RESET_ALL}")
-                    return None
-                elif response.status_code == 429:
-                    self.print_ping_message(email, idx, browser_id, proxy, Fore.RED, f"PING Failed: {Fore.YELLOW + Style.BRIGHT}Too Many Request, Retrying After 5 Minutes.{Style.RESET_ALL}")
+                response = await asyncio.to_thread(requests.post, url=url, headers=headers, data=data, proxies=proxies, timeout=60, impersonate="chrome110", verify=False)
+                if response.status_code == 429:
+                    self.print_message(email, idx, browser_id, proxy, Fore.RED, f"PING Failed: {Fore.YELLOW + Style.BRIGHT}Too Many Request, Retrying After 5 Minutes.{Style.RESET_ALL}")
                     await asyncio.sleep(5 * 60)
                     continue
+
                 response.raise_for_status()
                 return response.json()
             except Exception as e:
                 if attempt < retries - 1:
                     await asyncio.sleep(5)
                     continue
-                self.print_ping_message(email, idx, browser_id, proxy, Fore.RED, f"PING Failed: {Fore.YELLOW + Style.BRIGHT}{str(e)}{Style.RESET_ALL}")
+                self.print_message(email, idx, browser_id, proxy, Fore.RED, f"PING Failed: {Fore.YELLOW + Style.BRIGHT}{str(e)}{Style.RESET_ALL}")
 
         return None
-            
-    async def process_auth_session(self, email: str, use_proxy: bool, rotate_proxy: bool):
+
+    async def process_check_connection(self, email: str, idx: int, browser_id: str, use_proxy: bool, rotate_proxy: bool):
         while True:
-            proxy = self.get_next_proxy_for_account(email) if use_proxy else None
+            proxy = self.get_next_proxy_for_account(f"{email}_{browser_id}") if use_proxy else None
 
-            session = await self.auth_session(email, proxy)
-            if session and session.get("msg") == "Success":
-                season_name = session.get("data", {}).get("balance", {}).get("season_name") or "Season #N/A"
-                current_amount = session.get("data", {}).get("balance", {}).get("current_amount") or "N/A"
-                total_collected = session.get("data", {}).get("balance", {}).get("total_collected") or "N/A"
-
-                self.print_session_message(email, proxy, Fore.GREEN, f"{season_name}"
-                    f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
-                    f"{Fore.CYAN + Style.BRIGHT}Today Earning:{Style.RESET_ALL}"
-                    f"{Fore.WHITE + Style.BRIGHT} {current_amount} PTS {Style.RESET_ALL}"
-                    f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
-                    f"{Fore.CYAN + Style.BRIGHT} Total Earning: {Style.RESET_ALL}"
-                    f"{Fore.WHITE + Style.BRIGHT}{total_collected} PTS{Style.RESET_ALL}"
-                )
+            is_valid = await self.check_connection(email, idx, browser_id, proxy)
+            if is_valid:
                 return True
-
+            
             if rotate_proxy:
-                proxy = self.rotate_proxy_for_account(email)
+                proxy = self.rotate_proxy_for_account(f"{email}_{browser_id}")
 
-            await asyncio.sleep(5)
-            continue
+            await asyncio.sleep(3)
 
-    async def looping_auth_session(self, email: str, use_proxy: bool, rotate_proxy: bool):
+    async def process_auth_session(self, email: str, idx: int, browser_id: str, use_proxy: bool, rotate_proxy: bool):
+        is_valid = await self.process_check_connection(email, idx, browser_id, use_proxy, rotate_proxy)
+        if is_valid:
+            while True:
+                proxy = self.get_next_proxy_for_account(f"{email}_{browser_id}") if use_proxy else None
+
+                session = await self.auth_session(email, idx, browser_id, proxy)
+                if session:
+                    code = session.get("code")
+
+                    if code == 0:
+                        season_name = session.get("data", {}).get("balance", {}).get("season_name") or "Season #N/A"
+                        current_amount = session.get("data", {}).get("balance", {}).get("current_amount") or "N/A"
+                        total_collected = session.get("data", {}).get("balance", {}).get("total_collected") or "N/A"
+
+                        self.print_message(email, idx, browser_id, proxy, Fore.GREEN, f"{season_name}"
+                            f"{Fore.MAGENTA + Style.BRIGHT} - {Style.RESET_ALL}"
+                            f"{Fore.CYAN + Style.BRIGHT}Today Earning:{Style.RESET_ALL}"
+                            f"{Fore.WHITE + Style.BRIGHT} {current_amount} PTS {Style.RESET_ALL}"
+                            f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
+                            f"{Fore.CYAN + Style.BRIGHT} Total Earning: {Style.RESET_ALL}"
+                            f"{Fore.WHITE + Style.BRIGHT}{total_collected} PTS{Style.RESET_ALL}"
+                        )
+                        return True
+                    
+                    else:
+                        err_msg = session.get("msg", "Unknown Error")
+                        self.print_message(email, idx, browser_id, proxy, Fore.RED, f"Auth Session Failed: {Fore.YELLOW + Style.BRIGHT}{err_msg}{Style.RESET_ALL}")
+
+                await asyncio.sleep(3)
+    
+    async def looping_auth_session(self, email: str, idx: int, browser_id: str, use_proxy: bool, rotate_proxy: bool):
         while True:
             await asyncio.sleep(1 * 60 * 60)
-            await self.process_auth_session(email, use_proxy, rotate_proxy)
 
-    async def process_complete_missions(self, email: str, use_proxy: bool):
-        while True:
-            proxy = self.get_next_proxy_for_account(email) if use_proxy else None
-
-            mission_lists = await self.mission_lists(email, proxy)
-            if mission_lists and mission_lists.get("msg") == "Success":
-                missions = mission_lists.get("data", [])
-
-                if mission_lists:
-                    for mission in missions:
-                        if mission:
-                            mission_id = mission["id"]
-                            title = mission["title"]
-                            reward = mission["point"]
-                            status = mission["status"]
-
-                            if status == "AVAILABLE":
-                                complete = await self.complete_mission(email, mission_id, title, proxy)
-                                if complete and complete.get("msg") == "Success":
-                                    self.print_session_message(email, proxy, Fore.WHITE, f"Mission {title}"
-                                        f"{Fore.GREEN + Style.BRIGHT} Is Completed {Style.RESET_ALL}"
-                                        f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
-                                        f"{Fore.CYAN + Style.BRIGHT} Reward: {Style.RESET_ALL}"
-                                        f"{Fore.WHITE + Style.BRIGHT}{reward} PTS{Style.RESET_ALL}"
-                                    )
-
-            await asyncio.sleep(12 * 60 * 60)
+            await self.process_auth_session(email, idx, browser_id, use_proxy, rotate_proxy)
             
     async def process_send_ping(self, email: str, idx: int, browser_id: str, use_proxy: bool, rotate_proxy: bool):
-        while True:
-            proxy = self.get_next_proxy_for_account(browser_id) if use_proxy else None
-
-            print(
-                f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().astimezone(wib).strftime('%x %X %Z')} ]{Style.RESET_ALL}"
-                f"{Fore.WHITE + Style.BRIGHT} | {Style.RESET_ALL}"
-                f"{Fore.BLUE + Style.BRIGHT}Try to Sent Ping...{Style.RESET_ALL}                                   ",
-                end="\r",
-                flush=True
-            )
-
+        session = await self.process_auth_session(email, idx, browser_id, use_proxy, rotate_proxy)
+        if session:
             while True:
+                proxy = self.get_next_proxy_for_account(browser_id) if use_proxy else None
+
+                print(
+                    f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().astimezone(wib).strftime('%x %X %Z')} ]{Style.RESET_ALL}"
+                    f"{Fore.WHITE + Style.BRIGHT} | {Style.RESET_ALL}"
+                    f"{Fore.BLUE + Style.BRIGHT}Try to Sent Ping...{Style.RESET_ALL}                                   ",
+                    end="\r",
+                    flush=True
+                )
+
                 ping = await self.send_ping(email, idx, browser_id, proxy)
-                if ping and ping.get("msg") == "Success":
-                    score = ping.get("data", {}).get("ip_score", 0) or "N/A"
+                if ping:
+                    code = ping.get("code")
 
-                    self.print_ping_message(email, idx, browser_id, proxy, Fore.GREEN, "PING Success "
-                        f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
-                        f"{Fore.CYAN + Style.BRIGHT} Ip Score: {Style.RESET_ALL}"
-                        f"{Fore.WHITE + Style.BRIGHT}{score}{Style.RESET_ALL}"
-                    )
-                    break
+                    if code == 0:
+                        score = ping.get("data", {}).get("ip_score", 0) or "N/A"
+                        self.print_message(email, idx, browser_id, proxy, Fore.GREEN, "PING Success "
+                            f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
+                            f"{Fore.CYAN + Style.BRIGHT} Ip Score: {Style.RESET_ALL}"
+                            f"{Fore.WHITE + Style.BRIGHT}{score}{Style.RESET_ALL}"
+                        )
+                    
+                    else:
+                        err_msg = ping.get("msg", "Unknown Error")
+                        self.print_message(email, idx, browser_id, proxy, Fore.RED, f"PING Failed: {Fore.YELLOW + Style.BRIGHT}{err_msg}{Style.RESET_ALL}")
 
-                if rotate_proxy:
-                    proxy = self.rotate_proxy_for_account(browser_id)
-
-                await asyncio.sleep(5)
-                continue
-
-            print(
-                f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().astimezone(wib).strftime('%x %X %Z')} ]{Style.RESET_ALL}"
-                f"{Fore.WHITE + Style.BRIGHT} | {Style.RESET_ALL}"
-                f"{Fore.BLUE + Style.BRIGHT}Wait For 55 Minutes For Next Ping...{Style.RESET_ALL}",
-                end="\r"
-            )
-            await asyncio.sleep(55 * 60)
-        
-    async def process_handle_send_ping(self, email: str, use_proxy: bool, rotate_proxy: bool):
-        if use_proxy:
-            tasks = []
-            for i in range(3):
-                browser_id = self.generate_browser_id()
-                tasks.append(asyncio.create_task(self.process_send_ping(email, i+1, browser_id, use_proxy, rotate_proxy)))
-
-            await asyncio.gather(*tasks)
-
-        else:
-            browser_id = self.generate_browser_id()
-            await asyncio.create_task(self.process_send_ping(email, 1, browser_id, use_proxy, rotate_proxy))
+                print(
+                    f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().astimezone(wib).strftime('%x %X %Z')} ]{Style.RESET_ALL}"
+                    f"{Fore.WHITE + Style.BRIGHT} | {Style.RESET_ALL}"
+                    f"{Fore.BLUE + Style.BRIGHT}Wait For 55 Minutes For Next Ping...{Style.RESET_ALL}",
+                    end="\r"
+                )
+                await asyncio.sleep(55 * 60)
         
     async def process_accounts(self, email: str, use_proxy: bool, rotate_proxy: bool):
-        session = await self.process_auth_session(email, use_proxy, rotate_proxy)
-        if session:
-            tasks = [
-                asyncio.create_task(self.looping_auth_session(email, use_proxy, rotate_proxy)),
-                asyncio.create_task(self.process_complete_missions(email, rotate_proxy)),
-                asyncio.create_task(self.process_handle_send_ping(email, use_proxy, rotate_proxy))
-            ]
-            await asyncio.gather(*tasks)
+        tasks = []
+
+        async def process_handle_send_ping():
+            for i in range(3):
+                browser_id = self.generate_browser_id()
+
+                self.HEADERS[f'{email}_{browser_id}'] = {
+                    "Accept": "*/*",
+                    "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+                    "Origin": "chrome-extension://lgmpfmgeabnnlemejacfljbmonaomfmm",
+                    "Sec-Fetch-Dest": "empty",
+                    "Sec-Fetch-Mode": "cors",
+                    "Sec-Fetch-Site": "none",
+                    "Sec-Fetch-Storage-Access": "active",
+                    "User-Agent": random.choice(USER_AGENT)
+                }
+
+                tasks.append(asyncio.create_task(self.process_send_ping(email, i+1, browser_id, use_proxy, rotate_proxy)))
+
+        await asyncio.gather(*[process_handle_send_ping()])
+
+        await asyncio.gather(*tasks)
         
     async def main(self):
         try:

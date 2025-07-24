@@ -8,24 +8,14 @@ wib = pytz.timezone('Asia/Jakarta')
 
 class Nodepay:
     def __init__(self) -> None:
-        self.headers = {
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Origin": "https://app.nodepay.ai",
-            "Referer": "https://app.nodepay.ai/",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-site",
-            "User-Agent": FakeUserAgent().random
-        }
         self.BASE_API = "https://api.nodepay.ai/api"
         self.PAGE_URL = "https://app.nodepay.ai"
         self.SITE_KEY = "0x4AAAAAAAx1CyDNL8zOEPe7"
         self.CAPTCHA_KEY = None
+        self.HEADERS = {}
         self.proxies = []
         self.proxy_index = 0
         self.account_proxies = {}
-        self.captcha_tokens = {}
         self.password = {}
 
     def clear_terminal(self):
@@ -41,7 +31,7 @@ class Nodepay:
     def welcome(self):
         print(
             f"""
-        {Fore.GREEN + Style.BRIGHT}Auto Setup {Fore.BLUE + Style.BRIGHT}Nodepay - BOT
+        {Fore.GREEN + Style.BRIGHT}Nodepay {Fore.BLUE + Style.BRIGHT}Auto BOT
             """
             f"""
         {Fore.GREEN + Style.BRIGHT}Rey? {Fore.YELLOW + Style.BRIGHT}<INI WATERMARK>
@@ -98,12 +88,12 @@ class Nodepay:
             return captcha_key
         except Exception as e:
             return None
-
+    
     async def load_proxies(self, use_proxy_choice: int):
         filename = "proxy.txt"
         try:
             if use_proxy_choice == 1:
-                response = await asyncio.to_thread(requests.get, "https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=text")
+                response = await asyncio.to_thread(requests.get, "https://raw.githubusercontent.com/monosans/proxy-list/refs/heads/main/proxies/all.txt")
                 response.raise_for_status()
                 content = response.text
                 with open(filename, 'w') as f:
@@ -115,7 +105,7 @@ class Nodepay:
                     return
                 with open(filename, 'r') as f:
                     self.proxies = [line.strip() for line in f.read().splitlines() if line.strip()]
-    
+            
             if not self.proxies:
                 self.log(f"{Fore.RED + Style.BRIGHT}No Proxies Found.{Style.RESET_ALL}")
                 return
@@ -135,20 +125,20 @@ class Nodepay:
             return proxies
         return f"http://{proxies}"
 
-    def get_next_proxy_for_account(self, user_id):
-        if user_id not in self.account_proxies:
+    def get_next_proxy_for_account(self, account):
+        if account not in self.account_proxies:
             if not self.proxies:
                 return None
             proxy = self.check_proxy_schemes(self.proxies[self.proxy_index])
-            self.account_proxies[user_id] = proxy
+            self.account_proxies[account] = proxy
             self.proxy_index = (self.proxy_index + 1) % len(self.proxies)
-        return self.account_proxies[user_id]
+        return self.account_proxies[account]
 
-    def rotate_proxy_for_account(self, user_id):
+    def rotate_proxy_for_account(self, account):
         if not self.proxies:
             return None
         proxy = self.check_proxy_schemes(self.proxies[self.proxy_index])
-        self.account_proxies[user_id] = proxy
+        self.account_proxies[account] = proxy
         self.proxy_index = (self.proxy_index + 1) % len(self.proxies)
         return proxy
     
@@ -173,50 +163,89 @@ class Nodepay:
                         "Without"
                     )
                     print(f"{Fore.GREEN + Style.BRIGHT}Run {proxy_type} Proxy Selected.{Style.RESET_ALL}")
-                    return choose
+                    break
                 else:
                     print(f"{Fore.RED + Style.BRIGHT}Please enter either 1, 2 or 3.{Style.RESET_ALL}")
             except ValueError:
                 print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number (1, 2 or 3).{Style.RESET_ALL}")
+
+        rotate = False
+        if choose in [1, 2]:
+            while True:
+                rotate = input(f"{Fore.BLUE + Style.BRIGHT}Rotate Invalid Proxy? [y/n] -> {Style.RESET_ALL}").strip()
+                if rotate in ["y", "n"]:
+                    rotate = rotate == "y"
+                    break
+                else:
+                    print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter 'y' or 'n'.{Style.RESET_ALL}")
+
+        return choose, rotate
     
-    async def solve_cf_turnstile(self, email: str, proxy=None, retries=5):
+    async def check_connection(self, proxy=None):
+        url = "https://api.ipify.org?format=json"
+        proxies = {"http":proxy, "https":proxy} if proxy else None
+        try:
+            response = await asyncio.to_thread(requests.get, url=url, proxies=proxies, timeout=30, impersonate="chrome110", verify=False)
+            response.raise_for_status()
+            return True
+        except Exception as e:
+            self.log(
+                f"{Fore.CYAN + Style.BRIGHT}Status :{Style.RESET_ALL}"
+                f"{Fore.RED + Style.BRIGHT} Connection Not 200 OK {Style.RESET_ALL}"
+                f"{Fore.MAGENTA + Style.BRIGHT}-{Style.RESET_ALL}"
+                f"{Fore.YELLOW + Style.BRIGHT} {str(e)} {Style.RESET_ALL}"
+            )
+            return None
+        
+    async def solve_cf_turnstile(self, retries=5):
         for attempt in range(retries):
             try:
 
                 if self.CAPTCHA_KEY is None:
+                    self.log(
+                        f"{Fore.MAGENTA+Style.BRIGHT}   >{Style.RESET_ALL}"
+                        f"{Fore.CYAN+Style.BRIGHT} Status : {Style.RESET_ALL}"
+                        f"{Fore.RED+Style.BRIGHT}Turnstile Not Solved{Style.RESET_ALL}"
+                        f"{Fore.MAGENTA+Style.BRIGHT} - {Style.RESET_ALL}"
+                        f"{Fore.YELLOW+Style.BRIGHT}2Captcha Key Is None{Style.RESET_ALL}"
+                    )
                     return None
                 
                 url = f"http://2captcha.com/in.php?key={self.CAPTCHA_KEY}&method=turnstile&sitekey={self.SITE_KEY}&pageurl={self.PAGE_URL}"
-                response = await asyncio.to_thread(requests.get, url=url, proxy=proxy, timeout=60, impersonate="chrome110", verify=False)
+                response = await asyncio.to_thread(requests.get, url=url)
                 response.raise_for_status()
                 result = response.text
 
                 if 'OK|' not in result:
+                    self.log(
+                        f"{Fore.MAGENTA + Style.BRIGHT}   >{Style.RESET_ALL}"
+                        f"{Fore.BLUE + Style.BRIGHT} Message: {Style.RESET_ALL}"
+                        f"{Fore.YELLOW + Style.BRIGHT}{result}{Style.RESET_ALL}"
+                    )
                     await asyncio.sleep(5)
                     continue
 
                 request_id = result.split('|')[1]
 
                 self.log(
-                    f"{Fore.MAGENTA + Style.BRIGHT}    >{Style.RESET_ALL}"
-                    f"{Fore.BLUE + Style.BRIGHT} Req Id: {Style.RESET_ALL}"
+                    f"{Fore.MAGENTA + Style.BRIGHT}   >{Style.RESET_ALL}"
+                    f"{Fore.BLUE + Style.BRIGHT} Req Id : {Style.RESET_ALL}"
                     f"{Fore.WHITE + Style.BRIGHT}{request_id}{Style.RESET_ALL}"
                 )
 
                 for _ in range(30):
                     res_url = f"http://2captcha.com/res.php?key={self.CAPTCHA_KEY}&action=get&id={request_id}"
-                    res_response = await asyncio.to_thread(requests.get, url=res_url, proxy=proxy, timeout=60, impersonate="chrome110", verify=False)
+                    res_response = await asyncio.to_thread(requests.get, url=res_url)
                     res_response.raise_for_status()
                     res_result = res_response.text
 
                     if 'OK|' in res_result:
                         captcha_token = res_result.split('|')[1]
-                        self.captcha_tokens[email] = captcha_token
-                        return True
+                        return captcha_token
                     elif res_result == "CAPCHA_NOT_READY":
                         self.log(
-                            f"{Fore.MAGENTA + Style.BRIGHT}    >{Style.RESET_ALL}"
-                            f"{Fore.BLUE + Style.BRIGHT} Status: {Style.RESET_ALL}"
+                            f"{Fore.MAGENTA + Style.BRIGHT}   >{Style.RESET_ALL}"
+                            f"{Fore.BLUE + Style.BRIGHT} Message: {Style.RESET_ALL}"
                             f"{Fore.YELLOW + Style.BRIGHT}Captcha Not Ready{Style.RESET_ALL}"
                         )
                         await asyncio.sleep(5)
@@ -228,19 +257,30 @@ class Nodepay:
                 if attempt < retries - 1:
                     await asyncio.sleep(5)
                     continue
+                self.log(
+                    f"{Fore.MAGENTA+Style.BRIGHT}   >{Style.RESET_ALL}"
+                    f"{Fore.CYAN+Style.BRIGHT} Status : {Style.RESET_ALL}"
+                    f"{Fore.RED+Style.BRIGHT}Turnstile Not Solved{Style.RESET_ALL}"
+                    f"{Fore.MAGENTA+Style.BRIGHT} - {Style.RESET_ALL}"
+                    f"{Fore.YELLOW+Style.BRIGHT}{str(e)}{Style.RESET_ALL}"
+                )
                 return None
 
-    async def auth_login(self, email: str, proxy=None, retries=5):
+    async def auth_login(self, email: str, captcha_token: str, proxy=None, retries=5):
         url = f"{self.BASE_API}/auth/login?"
-        data = json.dumps({"user":email, "password":self.password[email], "remember_me": True, "recaptcha_token":self.captcha_tokens[email]})
-        headers = {
-            **self.headers,
-            "Content-Length": str(len(data)),
-            "Content-Type": "application/json"
-        }
+        data = json.dumps({
+            "user": email, 
+            "password": self.password[email], 
+            "remember_me": True, 
+            "recaptcha_token": captcha_token
+        })
+        headers = self.HEADERS[email].copy()
+        headers["Content-Length"] = str(len(data))
+        headers["Content-Type"] = "application/json"
         for attempt in range(retries):
+            proxies = {"http":proxy, "https":proxy} if proxy else None
             try:
-                response = await asyncio.to_thread(requests.post, url=url, headers=headers, data=data, proxy=proxy, timeout=60, impersonate="chrome110", verify=False)
+                response = await asyncio.to_thread(requests.post, url=url, headers=headers, data=data, proxies=proxies, timeout=60, impersonate="chrome110", verify=False)
                 response.raise_for_status()
                 return response.json()
             except Exception as e:
@@ -256,41 +296,68 @@ class Nodepay:
 
         return None
         
-    async def process_accounts(self, email: str, use_proxy: bool):
-        proxy = self.get_next_proxy_for_account(email) if use_proxy else None
-    
-        self.log(
-            f"{Fore.CYAN + Style.BRIGHT}Proxy  :{Style.RESET_ALL}"
-            f"{Fore.WHITE + Style.BRIGHT} {proxy} {Style.RESET_ALL}"
-        )
-
-        self.log(f"{Fore.CYAN + Style.BRIGHT}Captcha:{Style.RESET_ALL}")
-
-        cf_solved = await self.solve_cf_turnstile(email, proxy)
-        if not cf_solved:
+    async def process_check_connection(self, email: str, use_proxy: bool, rotate_proxy: bool):
+        while True:
+            proxy = self.get_next_proxy_for_account(email) if use_proxy else None
             self.log(
-                f"{Fore.MAGENTA + Style.BRIGHT}    >{Style.RESET_ALL}"
-                f"{Fore.BLUE + Style.BRIGHT} Status: {Style.RESET_ALL}"
-                f"{Fore.RED + Style.BRIGHT}Not Solved{Style.RESET_ALL}"
+                f"{Fore.CYAN+Style.BRIGHT}Proxy  :{Style.RESET_ALL}"
+                f"{Fore.WHITE+Style.BRIGHT} {proxy} {Style.RESET_ALL}"
             )
-            return
+
+            is_valid = await self.check_connection(proxy)
+            if is_valid:
+                return True
+            
+            if rotate_proxy:
+                proxy = self.rotate_proxy_for_account(email)
+                await asyncio.sleep(1)
+                continue
+
+            return False
+
+    async def process_accounts(self, email: str, use_proxy: bool, rotate_proxy: bool):
+        is_valid = await self.process_check_connection(email, use_proxy, rotate_proxy)
+        if is_valid:
+            proxy = self.get_next_proxy_for_account(email) if use_proxy else None
+
+            self.log(f"{Fore.CYAN + Style.BRIGHT}Captcha:{Style.RESET_ALL}")
+            self.log(
+                f"{Fore.MAGENTA + Style.BRIGHT}   >{Style.RESET_ALL}"
+                f"{Fore.YELLOW + Style.BRIGHT} Solving Captcha Turnstile... {Style.RESET_ALL}"
+            )
+
+            captcha_token = await self.solve_cf_turnstile()
+            if not captcha_token:
+                return
+            
+            self.log(
+                f"{Fore.MAGENTA + Style.BRIGHT}   >{Style.RESET_ALL}"
+                f"{Fore.BLUE + Style.BRIGHT} Status : {Style.RESET_ALL}"
+                f"{Fore.GREEN + Style.BRIGHT}Turnstile Solved Successfully{Style.RESET_ALL}"
+            )
         
-        self.log(
-            f"{Fore.MAGENTA + Style.BRIGHT}    >{Style.RESET_ALL}"
-            f"{Fore.BLUE + Style.BRIGHT} Status: {Style.RESET_ALL}"
-            f"{Fore.GREEN + Style.BRIGHT}Solved{Style.RESET_ALL}"
-        )
-    
-        login = await self.auth_login(email, proxy)
-        if login and login.get("msg") == "Success":
-            np_token = login["data"]["token"]
+            login = await self.auth_login(email, captcha_token, proxy)
+            if login:
+                code = login.get("code")
 
-            self.save_tokens([{"Email":email, "npToken":np_token}])
+                if code == 0:
+                    np_token = login["data"]["token"]
 
-            self.log(
-                f"{Fore.CYAN + Style.BRIGHT}Status :{Style.RESET_ALL}"
-                f"{Fore.GREEN + Style.BRIGHT} Token Have Been Saved Successfully {Style.RESET_ALL}"
-            )
+                    self.save_tokens([{"Email":email, "npToken":np_token}])
+
+                    self.log(
+                        f"{Fore.CYAN + Style.BRIGHT}Status :{Style.RESET_ALL}"
+                        f"{Fore.GREEN + Style.BRIGHT} Token Have Been Saved Successfully {Style.RESET_ALL}"
+                    )
+
+                else:
+                    err_msg = login.get("msg")
+                    self.log(
+                        f"{Fore.CYAN+Style.BRIGHT}Status :{Style.RESET_ALL}"
+                        f"{Fore.RED+Style.BRIGHT} Login Failed {Style.RESET_ALL}"
+                        f"{Fore.MAGENTA+Style.BRIGHT}-{Style.RESET_ALL}"
+                        f"{Fore.YELLOW+Style.BRIGHT} {err_msg} {Style.RESET_ALL}"
+                    )
     
     async def main(self):
         try:
@@ -303,7 +370,7 @@ class Nodepay:
             if capctha_key:
                 self.CAPTCHA_KEY = capctha_key
             
-            use_proxy_choice = self.print_question()
+            use_proxy_choice, rotate_proxy = self.print_question()
 
             use_proxy = False
             if use_proxy_choice in [1, 2]:
@@ -339,6 +406,17 @@ class Nodepay:
                         )
                         continue
 
+                    self.HEADERS[email] = {
+                        "Accept": "application/json, text/plain, */*",
+                        "Accept-Language": "en-US,en;q=0.9",
+                        "Origin": "https://app.nodepay.ai",
+                        "Referer": "https://app.nodepay.ai/",
+                        "Sec-Fetch-Dest": "empty",
+                        "Sec-Fetch-Mode": "cors",
+                        "Sec-Fetch-Site": "same-site",
+                        "User-Agent": FakeUserAgent().random
+                    }
+
                     self.log(
                         f"{Fore.CYAN + Style.BRIGHT}Account:{Style.RESET_ALL}"
                         f"{Fore.WHITE + Style.BRIGHT} {self.mask_account(email)} {Style.RESET_ALL}"
@@ -346,7 +424,7 @@ class Nodepay:
 
                     self.password[email] = password
 
-                    await self.process_accounts(email, use_proxy)
+                    await self.process_accounts(email, use_proxy, rotate_proxy)
                     await asyncio.sleep(3)
 
             self.log(f"{Fore.CYAN + Style.BRIGHT}={Style.RESET_ALL}"*68)
